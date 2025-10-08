@@ -15,6 +15,11 @@ public class ChromeDinosaur extends JPanel implements ActionListener, KeyListene
     Image cactus1Image;
     Image cactus2Image;
     Image cactus3Image;
+    Image gameOverImage;
+
+    // Sounds
+    Sound jumpSound;
+    Sound gameOverSound;
 
     // Dinosaur-specific variables
     int dinosaurWidth = 88;
@@ -35,6 +40,12 @@ public class ChromeDinosaur extends JPanel implements ActionListener, KeyListene
     ArrayList<GameObject> cactuses;
     GameObject cactus;
 
+    // Game over specific variables
+    int gameOverWidth = 386;
+    int gameOverHeight = 40;
+    int gameOverX = panelWidth - gameOverWidth;
+    int gameOverY = panelHeight - cactusY - gameOverHeight;
+
     // Timers
     Timer gameLoopTimer;
     Timer placeCactusTimer;
@@ -44,6 +55,7 @@ public class ChromeDinosaur extends JPanel implements ActionListener, KeyListene
     int gravity = 1;
     int velocityX = -10;
     boolean gameOver = false;
+    int score = 0;
 
     // General game objects class
     class GameObject {
@@ -80,6 +92,11 @@ public class ChromeDinosaur extends JPanel implements ActionListener, KeyListene
         cactus1Image = new ImageIcon(getClass().getResource("./image/cactus1.png")).getImage();
         cactus2Image = new ImageIcon(getClass().getResource("./image/cactus2.png")).getImage();
         cactus3Image = new ImageIcon(getClass().getResource("./image/cactus3.png")).getImage();
+        gameOverImage = new ImageIcon(getClass().getResource("./image/game-over.png")).getImage();
+
+        // Load sounds
+        jumpSound = new Sound("audio/jump.wav");
+        gameOverSound = new Sound("audio/game-over.wav");
 
         // dinosaur
         dinosaur = new GameObject(dinosaurX, dinosaurY, dinosaurWidth, dinosaurHeight, dinosaurRunningImage);
@@ -162,6 +179,15 @@ public class ChromeDinosaur extends JPanel implements ActionListener, KeyListene
             GameObject cactus = cactuses.get(i);
             g.drawImage(cactus.image, cactus.x, cactus.y, cactus.width, cactus.height, null);
         }
+
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("MS Gothic", Font.PLAIN, 32));
+        g.drawString("Score: "+String.valueOf(score), 10, 50);
+
+        // game over screen
+        if (gameOver) {
+            g.drawImage(gameOverImage, gameOverX, gameOverY, gameOverWidth, gameOverHeight, null);
+        }
     }
 
     // Drawing function from JPanel
@@ -175,12 +201,14 @@ public class ChromeDinosaur extends JPanel implements ActionListener, KeyListene
         move();
         repaint();
         if (gameOver) {
+            gameOverSound.play();
             dinosaur.image = dinosaurDeadImage;
             velocityX = 0;
             velocityY = 0;
             placeCactusTimer.stop();
             gameLoopTimer.stop();
         }
+        score++;
     }
 
     // KeyListener Methods
@@ -190,11 +218,13 @@ public class ChromeDinosaur extends JPanel implements ActionListener, KeyListene
             if (dinosaur.y == dinosaurY) {
                 velocityY = -17;
                 dinosaur.image = dinosaurJumpImage;
+                jumpSound.play();
             }
             if (gameOver) {
                 velocityX = -12;
                 dinosaur.image = dinosaurRunningImage;
                 gameOver = false;
+                score = 0;
 
                 cactuses.clear();
                 gameLoopTimer.start();
